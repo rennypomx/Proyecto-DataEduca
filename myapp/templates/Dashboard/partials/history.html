@@ -1,0 +1,73 @@
+<div data-page="history">
+  <h1>📊 Historial de reportes</h1>
+  <p class="subtitle">Consulta los reportes generados anteriormente.</p>
+
+  <table class="table-style">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Descripción</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="reportes-tbody">
+      {% if reportes %}
+        {% for reporte in reportes %}
+        <tr>
+          <td>{{ reporte.fecha_generacion|date:"d/m/Y" }}</td>
+          <td>{{ reporte.get_tipo_display }}</td>
+          <td>{{ reporte.descripcion }}</td>
+          <td>
+            <a href="{% url 'descargar_reporte' reporte.id %}" class="btn-success" download>📥 Descargar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" style="text-align: center; padding: 20px;">
+            No hay reportes generados aún.
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+// Auto-actualizar la tabla cada 5 segundos para nuevos reportes
+function actualizarReportes() {
+  fetch('/dashboard/get-reportes/')
+    .then(response => response.json())
+    .then(data => {
+      const tbody = document.getElementById('reportes-tbody');
+      if (data.reportes && data.reportes.length > 0) {
+        tbody.innerHTML = data.reportes.map(reporte => 
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>
+              <a href="/dashboard/descargar-reporte//" class="btn-success" download>📥 Descargar</a>
+            </td>
+          </tr>
+        ).join('');
+      } else {
+        tbody.innerHTML = 
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 20px;">
+              No hay reportes generados aún.
+            </td>
+          </tr>
+        ;
+      }
+    })
+    .catch(error => console.error('Error al actualizar reportes:', error));
+}
+
+// Actualizar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+  // Actualizar cada 5 segundos
+  setInterval(actualizarReportes, 5000);
+});
+</script>
